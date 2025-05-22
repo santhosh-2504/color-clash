@@ -1,20 +1,19 @@
-const CACHE_NAME = 'color-clash-cache-v2'; // Updated cache name to force a new installation
+const CACHE_NAME = 'color-clash-cache-v2';
 const urlsToCache = [
-    '/',
-    '/index.html',
-    '/game.js',
-    '/public/assets/images/favicon.ico',
-    '/public/assets/images/icon-192.png',
-    '/public/assets/images/icon-512.png',
-    '/public/assets/sound/click.mp3',  // Replace with actual audio file names
-    '/public/assets/sound/gameover.mp3' // Replace with actual audio file names
+    '/color-clash/',
+    '/color-clash/index.html',
+    '/color-clash/game.js',
+    '/color-clash/public/assets/images/favicon.ico',
+    '/color-clash/public/assets/images/icon-192.png',
+    '/color-clash/public/assets/images/icon-512.png',
+    '/color-clash/public/assets/sound/click.mp3',
+    '/color-clash/public/assets/sound/gameover.mp3'
 ];
 
-// Install the service worker and cache assets
+// Install event (unchanged)
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
-            // Use Promise.all to fetch each resource individually and log failures
             return Promise.all(
                 urlsToCache.map(url => {
                     return cache.add(url).catch(error => {
@@ -28,7 +27,7 @@ self.addEventListener('install', event => {
     );
 });
 
-// Serve cached assets when offline
+// Fetch event
 self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request).then(response => {
@@ -37,7 +36,7 @@ self.addEventListener('fetch', event => {
     );
 });
 
-// Update the cache when the service worker is activated
+// Activate event (unchanged)
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(

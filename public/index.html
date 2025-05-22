@@ -2331,17 +2331,18 @@
         </div>
     </div>
     <script>
-        // Register the service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then(registration => {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/color-clash/sw.js', { scope: '/color-clash/' })
+                .then(registration => {
                     console.log('Service Worker registered with scope:', registration.scope);
-                }).catch(error => {
+                })
+                .catch(error => {
                     console.error('Service Worker registration failed:', error);
                 });
-            });
-        }
-    </script>
+        });
+    }
+</script>
     <script src="game.js"></script>
 </body>
 </html>
