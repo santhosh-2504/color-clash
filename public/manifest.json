@@ -1,0 +1,21 @@
+{
+    "name": "Color Clash",
+    "short_name": "ColorClash",
+    "description": "A fun color-matching game where you click the target color tiles as they fall!",
+    "start_url": "/index.html",
+    "display": "standalone",
+    "background_color": "#121420",
+    "theme_color": "#5D4FEB",
+    "icons": [
+        {
+            "src": "/public/assets/images/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/public/assets/images/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
