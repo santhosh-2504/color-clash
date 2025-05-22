@@ -1638,21 +1638,20 @@
 </body>
 </html> -->
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Add PWA-specific meta tags -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#5D4FEB"> <!-- Matches your primary gradient -->
+    <meta name="theme-color" content="#5D4FEB"> 
     <meta name="description" content="Play Color Clash - a fun color-matching game!">
     <title>Color Clash</title>
-    <!-- Link to manifest -->
+    
     <link rel="manifest" href="/color-clash/manifest.json">
-    <!-- Link to icons -->
+    
     <link rel="icon" href="/color-clash/public/assets/images/favicon.ico">
     <link rel="apple-touch-icon" href="/color-clash/public/assets/images/icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
@@ -2237,6 +2236,811 @@
             
             .stat-box { 
                 width: 100%; 
+            }
+        }
+        
+        /* Particle effects */
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 8s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+            100% { transform: translateY(0) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div id="homeScreen">
+        <h1 class="logo">COLOR CLASH</h1>
+        <p class="subtitle">Click the target color tiles as they fall!</p>
+        
+        <div class="level-selector">
+            <h3 class="level-title">Select Difficulty</h3>
+            <div class="level-buttons">
+                <button class="level-btn active" data-level="easy">Easy</button>
+                <button class="level-btn" data-level="medium">Medium</button>
+                <button class="level-btn" data-level="hard">Hard</button>
+            </div>
+        </div>
+
+        <div class="high-score-display">
+            <div class="high-score-title">High Score</div>
+            <div class="high-score-value" id="homeHighScore">0</div>
+        </div>
+
+        <button class="start-btn" id="startGameBtn">START GAME</button>
+    </div>
+    
+    <div id="game-container">
+        <div id="ui">
+            <button class="back-btn" id="backToHomeBtn">← Back to Menu</button>
+            <h1>COLOR CLASH</h1>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <span class="stat-label">Score</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">High Score</span>
+                    <span id="highScore">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Level</span>
+                    <span id="currentLevel">Easy</span>
+                </div>
+            </div>
+            
+            <div class="target-container">
+                <span class="target-label">Target</span>
+                <span id="targetColor"></span>
+            </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
+    
+    <div id="gameOver">
+        <div class="game-over-container">
+            <div id="gameOverReason"></div>
+            <h2 class="game-over-header">GAME OVER</h2>
+            <div class="score-label">Final Score</div>
+            <div class="score-display" id="finalScore">0</div>
+            <button class="play-again" onclick="GameManager.restartGame()">Play Again</button>
+            <button onclick="GameManager.goToHome()">Main Menu</button>
+        </div>
+    </div>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/color-clash/sw.js', { scope: '/color-clash/' })
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                });
+        });
+    }
+</script>
+    <script src="game.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Add PWA-specific meta tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#5D4FEB"> <!-- Matches your primary gradient -->
+    <meta name="description" content="Play Color Clash - a fun color-matching game!">
+    <title>Color Clash</title>
+    <!-- Link to manifest -->
+    <link rel="manifest" href="/color-clash/manifest.json">
+    <!-- Link to icons -->
+    <link rel="icon" href="/color-clash/public/assets/images/favicon.ico">
+    <link rel="apple-touch-icon" href="/color-clash/public/assets/images/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #5D4FEB, #18C9CC);
+            --secondary-gradient: linear-gradient(180deg, #262A3E, #121420);
+            --accent-color: #FF4D6A;
+            --bg-light: rgba(255, 255, 255, 0.1);
+            --text-color: #E6E8FF;
+            --border-radius: 16px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--secondary-gradient);
+            font-family: 'Montserrat', sans-serif;
+            color: var(--text-color);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(93, 79, 235, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 30%, rgba(24, 201, 204, 0.05) 0%, transparent 25%),
+                radial-gradient(circle at 50% 80%, rgba(255, 77, 106, 0.05) 0%, transparent 25%);
+            z-index: -1;
+        }
+
+        /* Home Screen Styles */
+        #homeScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            background: rgba(38, 42, 62, 0.85);
+            border: 2px solid rgba(93, 79, 235, 0.3);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2.8em;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 5px;
+            letter-spacing: -0.02em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: "COLOR CLASH";
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            z-index: -1;
+            color: rgba(0, 0, 0, 0.2);
+            background: none;
+            filter: blur(2px);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.8;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            color: #B8BCFF;
+        }
+
+        .level-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .level-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #D1D5FF;
+        }
+
+        .level-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            padding: 14px 28px;
+            font-size: 0.95em;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-color);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-width: 110px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: 0.6s;
+        }
+
+        .level-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .level-btn:hover::before {
+            left: 100%;
+        }
+
+        .level-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 6px 20px rgba(255, 77, 106, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .level-btn.active::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+
+        .high-score-display {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 25px;
+            border-radius: 12px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .high-score-title {
+            font-size: 1em;
+            opacity: 0.75;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #B8BCFF;
+        }
+
+        .high-score-value {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: var(--accent-color);
+            text-shadow: 0 2px 15px rgba(255, 77, 106, 0.6);
+            letter-spacing: -0.02em;
+        }
+
+        .start-btn {
+            padding: 18px 45px;
+            font-size: 1.2em;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(135deg, #FF4D6A, #FF6B85);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(255, 77, 106, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: 0.6s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 77, 106, 0.6);
+            background: linear-gradient(135deg, #FF6B85, #FF4D6A);
+        }
+
+        .start-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-btn:active {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(255, 77, 106, 0.5);
+        }
+        
+        #game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #ui {
+            width: 100%;
+            padding: 20px;
+            background: rgba(38, 42, 62, 0.8);
+            border: 2px solid rgba(93, 79, 235, 0.3);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 
+                        inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -0.04em;
+            position: relative;
+            display: inline-block;
+        }
+        
+        h1::after {
+            content: "COLOR CLASH";
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            z-index: -1;
+            color: rgba(0, 0, 0, 0.2);
+            background: none;
+            filter: blur(2px);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 10px;
+            width: 30%;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.7;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        #score, #highScore, #currentLevel {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--text-color);
+        }
+
+        #currentLevel {
+            font-size: 1.2em;
+        }
+        
+        .target-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            width: 100%;
+        }
+        
+        .target-label {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+        
+        #targetColor {
+            width: 45px;
+            height: 45px;
+            display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+            transition: background-color 0.3s, transform 0.3s;
+            position: relative;
+        }
+        
+        #targetColor::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(2px);
+        }
+        
+        #targetColor.pulse {
+            animation: pulse 0.5s;
+        }
+        
+        canvas {
+            border: 2px solid rgba(93, 79, 235, 0.5);
+            border-radius: var(--border-radius);
+            background: linear-gradient(180deg, #1A1D2D, #131323);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3),
+                        inset 0 2px 3px rgba(255, 255, 255, 0.05);
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 2/3;
+            flex-shrink: 1;
+            min-height: 0;
+        }
+        
+        button {
+            padding: 12px 28px;
+            font-size: 1.1em;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(255, 77, 106, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 77, 106, 0.6);
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(255, 77, 106, 0.4);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(18, 20, 32, 0.9);
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+        
+        .game-over-container {
+            background: rgba(38, 42, 62, 0.95);
+            border: 2px solid rgba(93, 79, 235, 0.4);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 350px;
+            width: 90%;
+        }
+        
+        .game-over-header {
+            font-size: 2em;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #FF4D6A;
+            text-shadow: 0 2px 10px rgba(255, 77, 106, 0.5);
+        }
+        
+        #gameOverReason {
+            background: rgba(255, 77, 106, 0.2);
+            color: #FF4D6A;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: 600;
+            animation: fadeIn 0.5s;
+            border: 1px solid rgba(255, 77, 106, 0.3);
+        }
+        
+        .score-display {
+            font-size: 2.5em;
+            font-weight: 800;
+            margin: 20px 0;
+            color: var(--text-color);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .score-label {
+            font-size: 0.9em;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .play-again {
+            margin-bottom: 14px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 500px) {
+            body {
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+            
+            #homeScreen {
+                padding: 30px 25px;
+                max-width: 90%;
+                gap: 20px;
+            }
+            
+            .logo { 
+                font-size: 2.3em; 
+                margin-bottom: 8px;
+            }
+            
+            .subtitle {
+                font-size: 1em;
+                margin-bottom: 15px;
+            }
+            
+            .level-title {
+                font-size: 1.1em;
+            }
+            
+            .level-buttons { 
+                flex-direction: column; 
+                gap: 10px;
+            }
+            
+            .level-btn { 
+                width: 100%; 
+                padding: 12px 20px;
+                font-size: 0.9em;
+            }
+            
+            .high-score-display {
+                padding: 20px;
+            }
+            
+            .high-score-value {
+                font-size: 2em;
+            }
+            
+            .start-btn {
+                padding: 16px 35px;
+                font-size: 1.1em;
+            }
+            
+            #game-container { 
+                padding: 10px; 
+                gap: 10px;
+                height: 100vh;
+                max-height: 100vh;
+                overflow: hidden;
+            }
+            
+            #ui {
+                padding: 15px;
+                flex-shrink: 0;
+            }
+            
+            h1 { 
+                font-size: 1.8em; 
+                margin-bottom: 10px;
+            }
+            
+            .stats-container { 
+                margin-bottom: 10px;
+            }
+            
+            .stat-box {
+                padding: 8px;
+            }
+            
+            #score, #highScore {
+                font-size: 1.3em;
+            }
+            
+            #currentLevel {
+                font-size: 1.1em;
+            }
+            
+            .target-container {
+                padding: 8px;
+            }
+            
+            #targetColor {
+                width: 35px;
+                height: 35px;
+            }
+            
+            canvas {
+                width: 100% !important;
+                height: auto !important;
+                max-height: calc(100vh - 280px);
+                aspect-ratio: 2/3;
+                flex-shrink: 1;
+                min-height: 0;
+                object-fit: contain;
+            }
+            
+            button { 
+                padding: 10px 20px; 
+                font-size: 1em; 
+            }
+            
+            .back-btn {
+                padding: 6px 12px;
+                font-size: 0.85em;
+                margin-bottom: 8px;
+            }
+        }
+        
+        @media (max-height: 700px) and (max-width: 500px) {
+            #ui {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 1.6em;
+                margin-bottom: 8px;
+            }
+            
+            .stat-box {
+                padding: 6px;
+            }
+            
+            #score, #highScore {
+                font-size: 1.2em;
+            }
+            
+            #currentLevel {
+                font-size: 1em;
+            }
+            
+            .target-container {
+                padding: 6px;
+            }
+            
+            canvas {
+                max-height: calc(100vh - 240px);
+            }
+        }
+        
+        @media (max-height: 600px) and (max-width: 500px) {
+            canvas {
+                max-height: calc(100vh - 200px);
+            }
+            
+            #ui {
+                padding: 8px;
+            }
+            
+            h1 {
+                font-size: 1.4em;
+                margin-bottom: 5px;
             }
         }
         
