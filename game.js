@@ -1843,7 +1843,7 @@ const GameManager = {
                 if (tile.color === this.targetColor) {
 
                     // Play sound (if available)
-                    const audio = new Audio('assets/sound/click.mp3');
+                    const audio = new Audio('public/assets/sound/click.mp3');
                     audio.play();
                     
                     // Correct click
@@ -1881,7 +1881,7 @@ const GameManager = {
     endGame(reason) {
         this.gameOver = true;
         this.gameStarted = false;
-        const audio = new Audio('assets/sound/gameover.mp3');
+        const audio = new Audio('public/assets/sound/gameover.mp3');
         audio.play();
 
         // Check for new high score
